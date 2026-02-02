@@ -6,8 +6,7 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "250mb",
-        "runtime": "python3.11",
-        "excludeFiles": "**/*.pyc,**/__pycache__/**,news_dataset.csv,fake_news_model.pkl,*.pkl"
+        "runtime": "python3.11"
       }
     }
   ],
@@ -20,11 +19,5 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ],
-  "functions": {
-    "app.py": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  }
+  ]
 }
