@@ -3,18 +3,26 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import tempfile
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import PassiveAggressiveClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 
+# Use /tmp for Vercel (serverless environment)
+TEMP_DIR = tempfile.gettempdir()
+MODEL_PATH = os.path.join(TEMP_DIR, 'fake_news_model.pkl')
+DATASET_PATH = os.path.join(TEMP_DIR, 'news_dataset.csv')
+
+# Global model cache
+MODEL_CACHE = None
+
 # ======================= DATA SETUP =======================
 
 def create_synthetic_data():
     """Create synthetic dataset for fake news detection"""
     print("Creating synthetic dataset...")
-    # Real news samples - expanded with more diverse content
     real_news = [
         "The government announced new tax reforms today to boost the economy.",
         "Scientists have discovered a new species of frog in the Amazon rainforest.",
@@ -48,7 +56,6 @@ def create_synthetic_data():
         "Transportation system receives major safety upgrades."
     ]
     
-    # Fake news samples - expanded with obvious misinformation
     fake_news = [
         "Aliens have landed in New York and are meeting with the President!",
         "Drinking bleach can cure all known viruses instantly.",
@@ -82,33 +89,25 @@ def create_synthetic_data():
         "Ancient aliens built all major world monuments."
     ]
     
-    # Create DataFrame
     df_real = pd.DataFrame({'text': real_news, 'label': 'REAL'})
     df_fake = pd.DataFrame({'text': fake_news, 'label': 'FAKE'})
-    
     df = pd.concat([df_real, df_fake], ignore_index=True)
-    
-    # Shuffle
     df = df.sample(frac=1).reset_index(drop=True)
-    
-    # Save
-    df.to_csv('news_dataset.csv', index=False)
-    print("Dataset created: news_dataset.csv")
+    df.to_csv(DATASET_PATH, index=False)
+    print("Dataset created")
 
 
 # ======================= MODEL =======================
 
-MODEL_PATH = 'fake_news_model.pkl'
-
 def train_model():
     """Train the fake news classification model"""
+    global MODEL_CACHE
+    
     print("Training model...")
-    if not os.path.exists('news_dataset.csv'):
+    if not os.path.exists(DATASET_PATH):
         create_synthetic_data()
     
-    df = pd.read_csv('news_dataset.csv')
-    
-    # Preprocessing (basic)
+    df = pd.read_csv(DATASET_PATH)
     df = df.dropna()
     
     X = df['text']
@@ -116,7 +115,6 @@ def train_model():
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Create pipeline with improved parameters
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(stop_words='english', max_df=0.8, min_df=1, ngram_range=(1, 2))),
         ('clf', PassiveAggressiveClassifier(max_iter=100, random_state=42))
@@ -126,16 +124,23 @@ def train_model():
     
     y_pred = pipeline.predict(X_test)
     score = accuracy_score(y_test, y_pred)
-    print(f'Accuracy: {score*100:.2f}%')
+    print(f'Model Accuracy: {score*100:.2f}%')
     
     joblib.dump(pipeline, MODEL_PATH)
-    print(f"Model saved to {MODEL_PATH}")
+    print(f"Model saved")
+    MODEL_CACHE = pipeline
     return pipeline
 
 def load_model():
     """Load trained model or train if not exists"""
+    global MODEL_CACHE
+    
+    if MODEL_CACHE is not None:
+        return MODEL_CACHE
+    
     if os.path.exists(MODEL_PATH):
-        return joblib.load(MODEL_PATH)
+        MODEL_CACHE = joblib.load(MODEL_PATH)
+        return MODEL_CACHE
     else:
         return train_model()
 
@@ -148,36 +153,30 @@ def predict_news(text):
     prediction = model.predict([text])[0]
     
     try:
-        decision = model.named_steps['clf'].decision_function(model.named_steps['tfidf'].transform([text]))
-        # Sigmoid for pseudo-probability
+        decision = model.named_steps['clf'].decision_function(
+            model.named_steps['tfidf'].transform([text])
+        )
         confidence_score = 1 / (1 + np.exp(-decision[0]))
-        
-        # Get classes
         classes = model.named_steps['clf'].classes_
         
-        # Ensure we return the correct predicted class
         if decision[0] > 0:
-            predicted_class = classes[-1]  # Typically 'REAL'
+            predicted_class = classes[-1]
             display_confidence = confidence_score
         else:
-            predicted_class = classes[0]  # Typically 'FAKE'
+            predicted_class = classes[0]
             display_confidence = 1 - confidence_score
         
-        # Ensure confidence is between 0.5 and 1
         display_confidence = max(0.5, min(1.0, display_confidence))
         
     except Exception as e:
-        print(f"Error in decision function: {e}")
+        print(f"Error in decision: {e}")
         predicted_class = prediction
         display_confidence = 0.75
         
     return predicted_class, display_confidence
 
 def explain_prediction(text):
-    """
-    Returns a list of significant words contributing to the decision.
-    Simple feature importance extraction from Linear Model.
-    """
+    """Returns significant words contributing to the decision"""
     try:
         model = load_model()
         vectorizer = model.named_steps['tfidf']
@@ -185,31 +184,24 @@ def explain_prediction(text):
         
         input_vector = vectorizer.transform([text])
         feature_names = vectorizer.get_feature_names_out()
-        
-        # Identifying non-zero features in input
         nonzero_indices = input_vector.nonzero()[1]
-        
-        # Get coefficients for these features
         coefs = clf.coef_[0]
         
-        # Create valid feature importance for this specific text
         feature_contributions = []
         for idx in nonzero_indices:
             word = feature_names[idx]
             weight = coefs[idx]
             feature_contributions.append((word, weight))
         
-        # Sort by absolute weight (magnitude of impact)
         feature_contributions.sort(key=lambda x: abs(x[1]), reverse=True)
         
-        # Return top 5 influential words
         result = feature_contributions[:5]
         if not result:
-            result = [("no_matching_features", 0.0)]
+            result = [("no_features", 0.0)]
         return result
     except Exception as e:
-        print(f"Error in explain_prediction: {e}")
-        return [("error_analyzing", 0.0)]
+        print(f"Error in explain: {e}")
+        return [("error", 0.0)]
 
 
 # ======================= FLASK APP =======================
@@ -245,15 +237,25 @@ def predict():
         print(f"Error: {e}")
         return jsonify({'error': f"Server error: {str(e)}"}), 500
 
+
+# Initialize model on startup
+def init_model():
+    """Initialize model on app startup"""
+    try:
+        if not os.path.exists(DATASET_PATH):
+            create_synthetic_data()
+        if not os.path.exists(MODEL_PATH):
+            train_model()
+        else:
+            load_model()
+    except Exception as e:
+        print(f"Warning: Could not initialize model: {e}")
+
+try:
+    init_model()
+except Exception as e:
+    print(f"Init error: {e}")
+
 if __name__ == '__main__':
-    # Ensure dataset exists
-    if not os.path.exists('news_dataset.csv'):
-        create_synthetic_data()
-    
-    # Train model if doesn't exist
-    if not os.path.exists(MODEL_PATH):
-        train_model()
-    
-    # Get port from environment variable (for Render deployment)
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
