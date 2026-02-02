@@ -1,0 +1,344 @@
+:root {
+    --primary-color: #4c6ef5;
+    --secondary-color: #748ffc;
+    --background-light: #f8f9fa;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-color: #2c3e50;
+    --text-light: #555;
+    --accent-real: #27ae60;
+    --accent-fake: #e74c3c;
+    --border-color: #e0e0e0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* Background Animations */
+.background-glob {
+    position: fixed;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--primary-color), transparent 70%);
+    top: -20vh;
+    left: -20vw;
+    opacity: 0.08;
+    z-index: -1;
+    animation: moveGlob 20s infinite alternate;
+}
+
+.glob-2 {
+    top: auto;
+    bottom: -20vh;
+    left: auto;
+    right: -20vw;
+    background: radial-gradient(circle, var(--accent-real), transparent 70%);
+    animation-delay: -5s;
+}
+
+@keyframes moveGlob {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(100px, 100px); }
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    z-index: 1;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header p {
+    font-size: 1rem;
+    color: var(--text-light);
+}
+
+.input-section {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.input-section:hover {
+    transform: translateY(-5px);
+}
+
+textarea {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    resize: vertical;
+    outline: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s;
+}
+
+textarea:focus {
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: 0 0 8px rgba(76, 110, 245, 0.2);
+}
+
+button {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(76, 110, 245, 0.3);
+}
+
+button:hover {
+    background: var(--secondary-color);
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes rotation {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.result-section {
+    animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-card, .explanation-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.result-card h2 {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.explanation-card h3 {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.explanation-card p {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.5rem 2rem;
+    border-radius: 50px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin: 1rem 0;
+    letter-spacing: 2px;
+}
+
+.badge.real {
+    background: rgba(39, 174, 96, 0.15);
+    color: var(--accent-real);
+    border: 2px solid var(--accent-real);
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.3);
+}
+
+.badge.fake {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--accent-fake);
+    border: 2px solid var(--accent-fake);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
+}
+
+.confidence-meter {
+    margin-top: 1rem;
+}
+
+.meter-bg {
+    background: #e0e0e0;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.meter-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 1s ease-out;
+}
+
+#confidenceScore {
+    color: var(--text-color);
+}
+
+.keywords-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.keyword-tag {
+    padding: 0.4rem 1rem;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+}
+
+.keyword-tag span {
+    font-weight: 600;
+}
+
+.keyword-tag small {
+    color: var(--text-light);
+}
+
+.keyword-tag.positive {
+    border-left: 3px solid var(--accent-real);
+}
+
+.keyword-tag.negative {
+    border-left: 3px solid var(--accent-fake);
+}
+
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+footer p {
+    margin: 0.5rem 0;
+}
+
+.developers {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .input-section {
+        padding: 1.5rem;
+    }
+
+    textarea {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+
+    button {
+        font-size: 1rem;
+    }
+
+    .result-card, .explanation-card {
+        padding: 1.5rem;
+    }
+
+    .badge {
+        font-size: 1.2rem;
+        padding: 0.4rem 1.5rem;
+    }
+
+    .keyword-tag {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+    }
+}

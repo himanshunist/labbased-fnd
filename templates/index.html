@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fake News Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-glob"></div>
+    <div class="background-glob glob-2"></div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-newspaper"></i> TruthSeeker AI</h1>
+            <p>Advanced Fake News Detection System</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <textarea id="newsInput" placeholder="Paste the news article text here..." rows="6"></textarea>
+                <button id="analyzeBtn" onclick="analyzeNews()">
+                    <span id="btnText">Analyze Veracity</span>
+                    <div id="loader" class="loader" style="display: none;"></div>
+                </button>
+            </div>
+
+            <div id="resultSection" class="result-section hidden">
+                <div class="card result-card">
+                    <h2>Analysis Result</h2>
+                    <div id="veracityBadge" class="badge"></div>
+                    <div class="confidence-meter">
+                        <div class="meter-bg">
+                            <div id="meterFill" class="meter-fill"></div>
+                        </div>
+                        <span id="confidenceScore">0% Confidence</span>
+                    </div>
+                </div>
+
+                <div class="card explanation-card">
+                    <h3><i class="fas fa-search"></i> Why?</h3>
+                    <p>The AI focused on these key terms:</p>
+                    <div id="keywordsList" class="keywords-list">
+                        <!-- Keywords will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Scikit-Learn & Flask</p>
+            <p class="developers">Developed by: Himanshu Mishra | Sourav Kumar | Jayant Prakash | Sumit Kumar</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
